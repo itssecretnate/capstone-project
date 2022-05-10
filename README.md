@@ -9,3 +9,4 @@ My project will be a website for me and my movie loving girlfriend. The website 
    - Get public rating of a movie.
    - See if a movie is currently in theaters and display showtimes.
    - Show what services a movie is avaiable to watch on.
+   
