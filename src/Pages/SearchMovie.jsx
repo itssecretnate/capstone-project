@@ -25,7 +25,7 @@ function SearchMovie(props) {
         <div><h1>SearchMovie</h1>
             <form onSubmit={searchResults}>
                 <label>Title: <input type='text' onChange={e => setTitle(e.target.value)}></input></label>
-                <label>Year: <input type='text' onChange={e => setYear(e.target.value)}></input></label>
+                <label> Year: <input type='text' onChange={e => setYear(e.target.value)}></input></label>
                 <button>Search</button>
             </form>
 
