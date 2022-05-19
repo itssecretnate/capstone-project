@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import axios from 'axios'
 
 import config from '../config'
+import {posterFix} from '../utils'
 
 import MovieCard from '../Components/MovieCard';
 
@@ -26,7 +27,9 @@ function SearchMovie(props) {
         .then( searchRes => {
                 searchRes.data.Search.forEach(movie => {
                     const {Title: title, Poster: poster, Year: year} = movie;
-                    fixedMovieArr.push({title, poster, year})
+                    let fixedPoster = '';
+                    poster !== undefined && (fixedPoster = posterFix(poster))
+                    fixedMovieArr.push({title, poster: fixedPoster, year})
                 })
                 setMovies(fixedMovieArr);
             })
