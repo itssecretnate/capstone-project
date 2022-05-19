@@ -76,3 +76,16 @@
   color:white;
   background-color: grey;
 }
+
+
+/* Register and Login Pop-up */
+
+.registerDiv a {
+  margin-left: 10px;
+}
+
+.accountPopup {
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.549);
+}
