@@ -5,7 +5,7 @@ const cors = require('cors')
 const path = require('path');
 
 // const {seed} = require('./seedDB.js');
-const {login, register, getWatchlist} = require('./controller.js');
+const {login, register, addToMovieTable, getMovies, getWatchlist, addToWatchlist, removeFromWatchlist, updateWatchList} = require('./controller.js');
 
 app.use(express.json())
 app.use(cors())
@@ -25,8 +25,13 @@ const publicfolder = path.join(__dirname, '../build/')
 app.post('/register', register);
 app.post('/login', login);
 
+app.get('/movies', getMovies);
+app.post('/movies', addToMovieTable);
 
-app.put('/watchlist', getWatchlist);
+
+app.get('/watchlist', getWatchlist);
+app.put('/watchlist', updateWatchList);
+app.delete('/watchlist', removeFromWatchlist);
 
 
 const SERVER_PORT = process.SERVER_PORT || 9001;

@@ -1,5 +1,8 @@
 const Sequelize = require('sequelize');
 const bcryptjs = require("bcryptjs");
+const axios = require('axios');
+
+const {MOVIE_API_URL, MOVIE_API_KEY} = process.env;
 
 const sequelize = new Sequelize(process.env.CONNECTION_STRING, {
     dialect: 'postgres',
@@ -9,6 +12,11 @@ const sequelize = new Sequelize(process.env.CONNECTION_STRING, {
         }
     }
 })
+
+// FIGURE OUT HOW TO IMPORT UTILS FILE WITH THIS CODE.
+const posterFix = (url, size = '800') => {
+    return url.replace('SX300', `SX${size}`);
+}
 
 module.exports = {
 
@@ -90,7 +98,6 @@ module.exports = {
         })
 
         .catch(err => {
-            // let error = err.errors[0].message;
             let error = err;
             res.status(400).send(error);
             console.log(error);
@@ -98,26 +105,141 @@ module.exports = {
       },
 
       getWatchlist: (req, res) => {
-          const {username} = req.body;
+        try {
+            sequelize.query(`SELECT * FROM movies
+            ORDER BY date_added DESC;`)
+            .then(dbRes => {
+                res.status(200).send(dbRes[0]);
+            })
+        }
+        catch(err) { console.log(err); }
+      },
 
-          console.log(username);
+      addToMovieTable: (req, res) => {
+        const {title, poster, year, release_date, imdb_id} = req.body;
 
-          if(username === undefined) {
-              res.status(200).send('Undefined username.');
-              return;
+        console.log(req.body);
+
+        try { 
+            sequelize.query(`
+            INSERT INTO movies(title, poster, release_year, release_date, imdb_id)
+            VALUES('${title}', 
+            ${poster ? `'${poster}'` : 'NULL'}, 
+            '${year}', 
+            ${release_date !== undefined ? release_date : 'NULL'}, 
+            '${imdb_id !== undefined || imdb_id === '' ? imdb_id : 'NULL'}')
+            RETURNING movie_id;
+            `)
+            .then(dbRes => { 
+                const {movie_id} = dbRes[0][0];
+                res.status(200).send(`${title} has been added to movie DB. Movie_ID: ${movie_id}`)
+            })
+            .catch(err => {
+                console.log(err);
+                res.sendStatus(400);
+            })
+        }
+
+        catch(err) {
+            console.log(err);
+            res.sendStatus(400);
+        }
+      },
+
+      addToWatchlist: (req, res) => {
+          throw new Error("Unimplemented.")
+      },
+
+      getMovies: (req, res) => {
+
+        const {title, year, watchlist} = req.query;
+
+        if(!title && !watchlist) {
+            res.sendStatus(400);
+            return;
+        }
+
+          try {
+
+            if(watchlist === 'true') {
+                sequelize.query(`SELECT * FROM movies
+                ORDER BY release_date asc, date_watched desc, title asc;`)
+                .then(dbRes => {
+                    res.status(200).send(dbRes[0]);
+                })
+                return;
+            }
+
+            axios.get(`${MOVIE_API_URL}?&apikey=${MOVIE_API_KEY}&s=${title}&y=${year}`)
+            .then(dbRes => {
+                const movies = dbRes.data.Search;
+                let fixedMovieArr = [];
+                    movies.forEach(movie => {
+                        const {Title: title, Poster: poster, Year: release_year, imdbID: imdb_id} = movie;
+                        let fixedPoster = '';
+                        poster !== undefined && (fixedPoster = posterFix(poster))
+                        poster == 'N/A' && (fixedPoster = 'https://via.placeholder.com/540x800?text=Missing+Poster');
+                        fixedMovieArr.push({title, poster: fixedPoster, release_year, imdb_id})
+                    })
+                    res.status(200).send(fixedMovieArr);
+                return;
+            })
+
           }
+          catch {
+              res.sendStatus(400);
+          }
+      },
+
+      watchedMovie: (req, res) => {
+          const {movie_id} = req.body;
 
           sequelize.query(`
-            SELECT m.title, m.poster, m.release_year AS year, date_added FROM movie_watchlist as wl
-            LEFT OUTER JOIN movies m
-            ON wl.movie_id = m.movie_id
-            LEFT OUTER JOIN users u
-            ON wl.user_id = u.user_id
-            WHERE LOWER(u.username) = LOWER('${username}');
-          `).then(
-              dbRes => {
-                res.status(200).send(dbRes[0]);
-              }
-          )
-      }
+          UPDATE movies
+          SET date_watched = NOW()
+          WHERE movie_id = ${movie_id};
+          `)
+          .then(res.sendStatus(200))
+      },
+
+      removeFromWatchlist: (req, res) => {
+          const {title} = req.body;
+          
+          try {
+              sequelize.query(`
+              DELETE FROM movies
+              WHERE title = '${title}';
+              `)
+              .then(dbRes => {
+                  res.status(200).send(dbRes[0]);
+              })
+              .catch(err => {
+                  res.sendStatus(400);
+              })
+            }
+
+          catch {
+              res.sendStatus(400);
+          }
+        },
+
+        updateWatchList: (req, res) => {
+            const {title} = req.body;
+
+            if(title === undefined) {
+                res.sendStatus(400);
+                return;
+            }
+
+            sequelize.query(`
+            UPDATE movies
+            SET date_watched = NOW()
+            WHERE title = '${title}'
+            RETURNING date_watched;
+            `)
+            .then(dbRes => {
+                res.status(200).send(dbRes[0][0]);
+            })
+        }
 }
+

@@ -1,23 +1,20 @@
 // Import modules
 import axios from 'axios'
+import {Outlet} from 'react-router-dom'
 
-import logo from './logo.svg';
+// Other imports
 import './App.css';
+import Navbar from './Components/Navbar';
 
-// Import Components:
-import MovieCard from './Components/MovieCard';
-import SearchMovie from './Pages/SearchMovie';
-import AccountPopup from './Components/AccountPopup';
-
-
-const API_BASE_URL = 'http://www.omdbapi.com/'
 
 function App() {
   return (
-    <div className="App">
-      <SearchMovie apiURL={API_BASE_URL}/>
-      {/* <AccountPopup /> */}
-    </div>
+    <>
+    <Navbar />
+    
+    {/* Used for browser router. */}
+    <Outlet />
+    </>
   );
 }
 

@@ -1,68 +1,80 @@
 import React, {useState, useEffect} from 'react'
 import axios from 'axios'
 
-import config from '../config'
-import {posterFix} from '../utils'
-
-import MovieCard from '../Components/MovieCard';
+import PosterDisplay from '../Components/PosterDisplay';
 
 function SearchMovie(props) {
-
-    const API_BASE_URL = props.apiURL;
-    const API_KEY = config.API_KEY;
 
     const [title, setTitle] = useState('');;
     const [year, setYear] = useState('');
     const [movies, setMovies] = useState([]);
 
-    // Debugging watchlist
-    const [username, setUsername] = useState('');
+    const [watchList, setWatchlist] = useState();
+
+    useEffect(() => {
+        getWatchlist(); // Move this to useEffect.
+    }, [movies])
+
+    const isInWatchList = (movieTitle) => {
+        if(watchList) {
+            for(let i in watchList) {
+                if(watchList[i].imdb_id === movieTitle) return true;
+            }
+        }
+        return false;
+    }
 
     const searchResults = async (e) => {
         e.preventDefault();
-
-        let fixedMovieArr = []; // No further questions at this time. Need to see if there's a better way to remap the variables.
         
-        axios.get(`${API_BASE_URL}?&apikey=${API_KEY}&s=${title}&y=${year}`)
-        .then( searchRes => {
-                searchRes.data.Search.forEach(movie => {
-                    const {Title: title, Poster: poster, Year: year} = movie;
-                    let fixedPoster = '';
-                    poster !== undefined && (fixedPoster = posterFix(poster))
-                    fixedMovieArr.push({title, poster: fixedPoster, year})
-                })
-                setMovies(fixedMovieArr);
-            })
-        
+        axios.get(`http://localhost:9001/movies`, {params: {title: title, year: year}})
+        .then( res => {
+            let filteredMovies = res.data.filter(movie => !isInWatchList(movie.imdb_id))
+            setMovies(filteredMovies);
+        })
     }
-
+    
     const getWatchlist = async (e) => {
-        e.preventDefault();
-
-        axios.put(`http://localhost:9001/watchlist`, {username}).then(res => {
-            setMovies(res.data)
+        if(e) e.preventDefault();
+        
+        axios.get(`http://localhost:9001/watchlist`).then(res => {
+            res.data.forEach((movie, index) => {
+                movie.onWatchlist = true;
+                res.data[index] = movie;
+            })
+            console.log('Watchlist downloaded.')
+            setWatchlist(res.data);
             }
         )
     }
 
+    const getAllMovies = async (e) => {
+        if(e) e.preventDefault();
+
+        setMovies([]);
+
+        axios.get('http://localhost:9001/movies', {params: {watchlist: true}})
+        .then(res => {
+            setMovies(res.data);
+        })
+    }
+
     return (
-        <div><h1>SearchMovie</h1>
+        <div className='searchDiv'><h1>SearchMovie</h1>
             <form onSubmit={searchResults}>
                 <label>Title: <input type='text' onChange={e => setTitle(e.target.value)}></input></label>
                 <label> Year: <input type='text' onChange={e => setYear(e.target.value)}></input></label>
                 <button>Search</button>
             </form>
 
-            <form onSubmit={getWatchlist}>
-                <label>Username: </label>
-                    <input type='text' onChange={e => setUsername(e.target.value)}/>
-                <button>Get Watchlist</button>
-            </form>
+            {/* <button onClick={getAllMovies}>Show Watchlist</button> */}
 
             <h2>Search Results:</h2>
-            <div className='resultsContainer'>
-                {movies && movies.map(movie => <MovieCard movie={movie} />)}
-            </div>
+            <PosterDisplay movies={movies} isInWatchList={isInWatchList} getAllMovies={getAllMovies} />
+
+            {/* <div className='resultsContainer'>
+                {movies && movies.map(movie => <MovieCard key={movie.imdb_id} movie={movie} watchListItem={isInWatchList(movie.title)} updateList={getAllMovies}/>)}
+            </div> */}
 
         </div>
     )

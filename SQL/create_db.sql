@@ -1,4 +1,5 @@
 drop table if exists movie_watchlist;
+drop table if exists movies_watched;
 drop table if exists movie_ratings;
 drop table if exists movies;
 drop table if exists authentication;
@@ -12,7 +13,7 @@ CREATE TABLE users (
     username VARCHAR(16) NOT NULL UNIQUE,
     is_admin BOOLEAN NOT NULL,
     creation_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP with TIME ZONE
+    last_login TIMESTAMP WITH TIME ZONE -- I may want to move this into the authentication table.
 );
 
   CREATE TABLE authentication (
@@ -24,30 +25,40 @@ CREATE TABLE users (
 
 CREATE TABLE movies (
     movie_id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    -- Relase year may contain 2 years for when a series started and ended.
+    title VARCHAR(255) UNIQUE NOT NULL,
     poster TEXT,
-    release_year VARCHAR(15),
-    plot TEXT
+    release_year VARCHAR(15), -- Relase year may contain 2 years for when a series started and ended.
+    release_date TIMESTAMP, -- This could possibly replease the release_year. Need to investigate further.
+    date_watched TIMESTAMP,
+    imdb_id VARCHAR(15),
+    plot TEXT,
+    date_added TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE movie_ratings (
     rating_id SERIAL PRIMARY KEY,
     rating FLOAT(10) NOT NULL,
-    movie_id INTEGER NOT NULL REFERENCES movies(movie_id),
+    movie_id INTEGER NOT NULL REFERENCES movies(movie_id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES users(user_id)
 );
 
-CREATE TABLE movie_watchlist (
-    watchlist_id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(user_id),
-    -- Rating ID? May need to figure out how to calculate movie ratings.
-    movie_id INTEGER NOT NULL REFERENCES movies(movie_id),
-    -- May not need the is_watched. Just cacluate with a watch_date?
-    is_watched BOOLEAN NOT NULL DEFAULT false,
-    date_added TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    watch_date TIMESTAMP
-);
+-- CREATE TABLE movies_watched (
+--     watched_id SERIAL PRIMARY KEY,
+--     movie_id INTEGER NOT NULL REFERENCES movies(movie_id) ON DELETE CASCADE,
+--     user_id INTEGER NOT NULL REFERENCES users(user_id),
+--     date_watched TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- );
+
+-- CREATE TABLE movie_watchlist (
+--     watchlist_id SERIAL PRIMARY KEY,
+--     user_id INTEGER NOT NULL REFERENCES users(user_id),
+--     -- Rating ID? May need to figure out how to calculate movie ratings.
+--     movie_id INTEGER NOT NULL REFERENCES movies(movie_id),
+--     -- May not need the is_watched. Just cacluate with a watch_date?
+--     is_watched BOOLEAN NOT NULL DEFAULT false,
+--     date_added TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     watch_date TIMESTAMP
+-- );
 
 
 
@@ -75,13 +86,24 @@ VALUES
 (9.5, 3, 1),
 (8.5, 3, 2);
 
--- Watch List
-INSERT INTO movie_watchlist(user_id, movie_id, date_added)
-VALUES
-(1, 1, NOW()),
-(1, 3, NOW()),
-(2, 3, NOW()),
-(2, 2, NOW());
+-- Movies Watched
+-- INSERT INTO movies_watched(movie_id, user_id)
+-- VALUES
+-- (1, 1),
+-- (1, 2),
+-- (2, 1),
+-- (2, 2),
+-- (3, 1),
+-- (3, 2);
+
+
+-- -- Watch List
+-- INSERT INTO movie_watchlist(user_id, movie_id, date_added)
+-- VALUES
+-- (1, 1, NOW()),
+-- (1, 3, NOW()),
+-- (2, 3, NOW()),
+-- (2, 2, NOW());
 
 
 
@@ -103,10 +125,17 @@ LEFT OUTER JOIN users u
 ON mr.user_id = u.user_id
 ORDER BY u.username ASC;
 
--- Get all watchlisted movies
-SELECT m.title, u.username, date_added FROM movie_watchlist as wl
-LEFT OUTER JOIN movies m
-ON wl.movie_id = m.movie_id
-LEFT OUTER JOIN users u
-ON wl.user_id = u.user_id
-ORDER BY u.username ASC;
+-- -- Get all watchlisted movies
+-- SELECT m.title, u.username, date_added FROM movie_watchlist as wl
+-- LEFT OUTER JOIN movies m
+-- ON wl.movie_id = m.movie_id
+-- LEFT OUTER JOIN users u
+-- ON wl.user_id = u.user_id
+-- ORDER BY u.username ASC;
+
+-- -- Get all movies watched for all users.
+-- SELECT m.title, m.poster, m.release_year AS year, mw.date_watched, u.username FROM movies_watched AS mw
+-- LEFT OUTER JOIN users u
+-- ON mw.user_id = u.user_id
+-- LEFT OUTER JOIN movies m
+-- ON mw.movie_id = m.movie_id;
