@@ -12,7 +12,7 @@ function SearchMovie(props) {
     const [watchList, setWatchlist] = useState();
 
     useEffect(() => {
-        getWatchlist(); // Move this to useEffect.
+        getWatchlist();
     }, [movies])
 
     const isInWatchList = (movieTitle) => {
@@ -27,8 +27,11 @@ function SearchMovie(props) {
     const searchResults = async (e) => {
         e.preventDefault();
         
-        axios.get(`http://localhost:9001/movies`, {params: {title: title, year: year}})
+        axios.get('/api/movies', {params: {title: title, year: year}})
         .then( res => {
+
+            if(!Array.isArray(res.data)) return (<h1>Error retrieving movies.</h1>)
+
             let filteredMovies = res.data.filter(movie => !isInWatchList(movie.imdb_id))
             setMovies(filteredMovies);
         })
@@ -37,7 +40,7 @@ function SearchMovie(props) {
     const getWatchlist = async (e) => {
         if(e) e.preventDefault();
         
-        axios.get(`http://localhost:9001/watchlist`).then(res => {
+        axios.get('/api/watchlist').then(res => {
             res.data.forEach((movie, index) => {
                 movie.onWatchlist = true;
                 res.data[index] = movie;
@@ -53,29 +56,21 @@ function SearchMovie(props) {
 
         setMovies([]);
 
-        axios.get('http://localhost:9001/movies', {params: {watchlist: true}})
+        axios.get('movies', {params: {watchlist: true}})
         .then(res => {
             setMovies(res.data);
         })
     }
 
     return (
-        <div className='searchDiv'><h1>SearchMovie</h1>
-            <form onSubmit={searchResults}>
+        <div className='searchDiv'>
+            <form className='searchForm' onSubmit={searchResults}>
                 <label>Title: <input type='text' onChange={e => setTitle(e.target.value)}></input></label>
                 <label> Year: <input type='text' onChange={e => setYear(e.target.value)}></input></label>
                 <button>Search</button>
             </form>
 
-            {/* <button onClick={getAllMovies}>Show Watchlist</button> */}
-
-            <h2>Search Results:</h2>
-            <PosterDisplay movies={movies} isInWatchList={isInWatchList} getAllMovies={getAllMovies} />
-
-            {/* <div className='resultsContainer'>
-                {movies && movies.map(movie => <MovieCard key={movie.imdb_id} movie={movie} watchListItem={isInWatchList(movie.title)} updateList={getAllMovies}/>)}
-            </div> */}
-
+            <PosterDisplay movies={Array.isArray(movies) && movies} isInWatchList={isInWatchList} getAllMovies={getAllMovies} />
         </div>
     )
 }

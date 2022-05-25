@@ -13,9 +13,23 @@ const sequelize = new Sequelize(process.env.CONNECTION_STRING, {
     }
 })
 
-// FIGURE OUT HOW TO IMPORT UTILS FILE WITH THIS CODE.
+// FIGURE OUT HOW TO IMPORT UTILS FILE THAT CONTAINS THIS CODE.
 const posterFix = (url, size = '800') => {
     return url.replace('SX300', `SX${size}`);
+}
+
+const formatMovie = (movie) => {
+
+    // Deconstruct the movie and remap to the variable names we need.
+    const {Title: title, Poster: poster, Year: release_year, imdbID: imdb_id} = movie;
+
+    // Hack-y way to set the posted to placeholder data until. TODO: Look for more elegant way of doing this. (Maybe handle this client-side)
+    let fixedPoster = '';
+    poster !== undefined && (fixedPoster = posterFix(poster))
+    poster == 'N/A' && (fixedPoster = 'https://via.placeholder.com/540x800?text=Missing+Poster');
+
+    return({title, poster: fixedPoster, release_year, imdb_id})
+
 }
 
 module.exports = {
@@ -74,6 +88,7 @@ module.exports = {
       },
   
       register: (req, res) => {
+        try {
         const { firstName, lastName, email, username, password } = req.body;
 
         let isAdmin = false; // TODO
@@ -101,7 +116,10 @@ module.exports = {
             let error = err;
             res.status(400).send(error);
             console.log(error);
-        })
+        })}
+        catch {
+            res.sendStatus(500);
+        }
       },
 
       getWatchlist: (req, res) => {
@@ -116,11 +134,10 @@ module.exports = {
       },
 
       addToMovieTable: (req, res) => {
-        const {title, poster, year, release_date, imdb_id} = req.body;
+          
+          try { 
+            const {title, poster, year, release_date, imdb_id} = req.body;
 
-        console.log(req.body);
-
-        try { 
             sequelize.query(`
             INSERT INTO movies(title, poster, release_year, release_date, imdb_id)
             VALUES('${title}', 
@@ -147,19 +164,19 @@ module.exports = {
       },
 
       addToWatchlist: (req, res) => {
-          throw new Error("Unimplemented.")
+        res.sendStatus(501); // 501 = Not implemented
       },
 
       getMovies: (req, res) => {
 
+        try {
         const {title, year, watchlist} = req.query;
+            
 
         if(!title && !watchlist) {
             res.sendStatus(400);
             return;
         }
-
-          try {
 
             if(watchlist === 'true') {
                 sequelize.query(`SELECT * FROM movies
@@ -173,15 +190,26 @@ module.exports = {
             axios.get(`${MOVIE_API_URL}?&apikey=${MOVIE_API_KEY}&s=${title}&y=${year}`)
             .then(dbRes => {
                 const movies = dbRes.data.Search;
+
+                if(!Array.isArray(movies)) {
+                    // TODO: Implement better error handling for when results are not found. { Response: 'False', Error: 'Movie not found!' }
+                    if(dbRes.data.Response === 'False') {
+                        console.log("Search result not found.");
+                        res.sendStatus(501);
+                        return;
+                    }
+                    console.log(dbRes.data);
+                    res.status(200).send(formatMovie(movies));
+                    return;
+                }
+
                 let fixedMovieArr = [];
-                    movies.forEach(movie => {
-                        const {Title: title, Poster: poster, Year: release_year, imdbID: imdb_id} = movie;
-                        let fixedPoster = '';
-                        poster !== undefined && (fixedPoster = posterFix(poster))
-                        poster == 'N/A' && (fixedPoster = 'https://via.placeholder.com/540x800?text=Missing+Poster');
-                        fixedMovieArr.push({title, poster: fixedPoster, release_year, imdb_id})
-                    })
-                    res.status(200).send(fixedMovieArr);
+
+                movies.forEach(movie => {
+                    fixedMovieArr.push(formatMovie(movie));
+                })
+
+                res.status(200).send(fixedMovieArr);
                 return;
             })
 

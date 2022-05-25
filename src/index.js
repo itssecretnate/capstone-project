@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 
 import {BrowserRouter, Routes, Route, Outlet} from 'react-router-dom'
+import { CookiesProvider } from "react-cookie";
 
 // Page imports.
 import App from './App';
@@ -12,6 +13,7 @@ import Watchlist from './Pages/Watchlist';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
+  <CookiesProvider>
   <React.StrictMode>
         <BrowserRouter>
       <Routes>
@@ -20,7 +22,7 @@ root.render(
         <Route path="*" element={<div><h1>Page not found.</h1></div>} />
         
           {/* Default App / Nav Bar. */}
-          <Route path='/' element={<App />}>
+          <Route path='' element={<App />}>
 
           {/* HomePage */}
           <Route index element={<Home />} />
@@ -29,7 +31,7 @@ root.render(
           {/* Products Page */}
           <Route path='search'>
             <Route index element={<SearchMovie />} />
-            {/* <Route path='/product/:id' element={<Details />} /> */}
+            {/* <Route path='product/:id' element={<Details />} /> */}
           </Route>
 
           <Route path='watchlist' element={<Watchlist />} />
@@ -39,4 +41,5 @@ root.render(
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
+  </CookiesProvider>
 );

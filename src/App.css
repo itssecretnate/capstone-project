@@ -9,10 +9,16 @@ body {
   text-align: center;
 }
 
+.searchForm {
+  margin-top: 15px;
+}
+
 .resultsContainer { 
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .movieCard {
@@ -51,11 +57,13 @@ body {
 
 }
 
-#movieCardButton {
+#singleMovieButton {
   position: absolute;
   left: 3rem;
   bottom: 15%;
+}
 
+.movieCardButton {
   width: 60%;
   height: 3rem;
 
@@ -70,7 +78,7 @@ body {
   transition: background-color .15s linear;
 }
 
-#movieCardButton:hover:enabled {
+.movieCardButton:hover:enabled {
   cursor: pointer;
 
   color:black;
@@ -79,22 +87,9 @@ body {
   transition: background-color .15s linear;
 }
 
-#movieCardButton:active {
+.movieCardButton:active {
   color:white;
   background-color: grey;
-}
-
-
-/* Register and Login Pop-up */
-
-.registerDiv a {
-  margin-left: 10px;
-}
-
-.accountPopup {
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.549);
 }
 
 /* Navbar section */
@@ -103,18 +98,15 @@ body {
   display: flex;
   /* position: fixed; */
   width: 100%;
-  height: 75px;
+  height: 70px;
   top: 0;
   left: 0;
   background-color: #457B9D;
 }
 
 .navBarLogo {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 5%;
-  width: auto;
-  height: 50%;
+  position: absolute;
+  left: 15px;
 }
 
 .navLink {
@@ -152,18 +144,15 @@ body {
 /* Profile picture */
 
 .profilePicture {
-  background: rgb(198, 44, 44);
-  width: 40px;
-  height: 40px;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 1/1;
+  background: #c62c2c;
+  border: 3px solid #000;
   border-radius: 50%;
-  border: 3px solid black;
-  
-  
-  margin-right: 5%;
-  margin-top: auto;
-  margin-bottom: auto;
-  /* margin-left: auto; */
+  height: 40px;
+  width: 40px;
+  position: absolute;
+  right: 15px;
+  top: 10px;
 }
 
 .profilePicture p {
@@ -172,11 +161,6 @@ body {
   color: black;
   padding-top: 20%;
   margin: 4%;
-}
-
-.searchDiv {
-  /* height: fit-content;
-  background-color: #457B9D; */
 }
 
 .posterSection {
@@ -204,4 +188,90 @@ body {
   display: flex;
   align-content: center;
   justify-content: center;
+}
+
+
+/* Login and Register */
+
+
+.accountPopup {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  transform: translate(0px, -85px);
+  z-index: 69;
+  background-color: #00000054;
+}
+
+.login, .register {
+  width: 45%;
+}
+
+.loginForm, .registerForm {
+  padding: 5px;
+  background-color: #457B9D;
+  box-shadow: 3px 3px rgb(66 66 66);
+  width: 30rem;
+  
+  
+  position: absolute;
+  left: 50%;
+  /* right: 25%; */
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 69;
+}
+
+.loginForm p, .registerForm p {
+  margin: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.loginForm p:hover, .registerForm p:hover, #link {
+  text-decoration: underline;
+}
+
+#loginFormContainer {
+  font-size: larger;
+}
+
+#registerForm > input[type='text'] {
+  width: 100%;
+  box-sizing:border-box;
+  margin: 2px;
+}
+
+#registerForm > input[type='password'] {
+  width: 50%;
+  box-sizing:border-box;
+  /* margin: 2px; */
+}
+
+#closePopup { 
+  position: fixed;
+  right: 13%;
+  top: 33%;
+  cursor: pointer;
+}
+
+.headerLoginButton {
+  position: absolute;
+  right: 15px;
+  /* top: 5px; */
+  cursor: pointer;
+}
+
+.headerLoginButton:hover {
+  text-decoration: underline;
+}
+
+.watchListItemButtons, button {
+  margin: 5px;
+}
+
+#demoUserName {
+  position: absolute;
+  top: 10px;
+  right: 75px;
 }

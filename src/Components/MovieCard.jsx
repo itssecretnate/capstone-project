@@ -16,8 +16,6 @@ function MovieCard(props) {
 
   
   const {title, poster, release_year: year, imdb_id, date_watched, release_date} = (props.movie !== undefined) ? props.movie : fallbackData;
-
-  if(props.movie === undefined) console.log(`${props.movie} is undefined.`)
   
 
   const [disableButton, setDisableButton] = useState(false);
@@ -25,7 +23,7 @@ function MovieCard(props) {
   const [isUpcoming] = useState(release_date ? true : false);
 
   const addToList = () => {
-    axios.post('http://localhost:9001/movies', {title, poster, year, imdb_id})
+    axios.post('/api/movies', {title, poster, year, imdb_id})
     .then(res => {
       setDisableButton(true);
       console.log(res.data);
@@ -33,7 +31,7 @@ function MovieCard(props) {
   }
 
   const removeFromList = () => {
-    axios.delete('http://localhost:9001/watchlist', {data: {title}})
+    axios.delete('/api/watchlist', {data: {title}})
     .then(res => {
       updateList();
       console.log(res.data);
@@ -41,7 +39,7 @@ function MovieCard(props) {
   }
 
   const markWatched = () => {
-    axios.put('http://localhost:9001/watchlist', {title})
+    axios.put('/api/watchlist', {title})
     .then(res => {
       console.log(res.data);
       setIsWatched(true);
@@ -52,15 +50,20 @@ function MovieCard(props) {
   const buttons = () => {
     if(previewOnly === 'true') return;
     else {
-      if(watchListItem) return (<><button disabled={isWatched} onClick={removeFromList}>Delete</button> <button disabled={isWatched || isUpcoming} onClick={markWatched}>Watched</button></>) 
-      else return (<button id='movieCardButton' disabled={disableButton} onClick={addToList}>Add to list</button>)
+      if(watchListItem) return (
+      <div className='watchListItemButtons'>
+      <button className='movieCardButton' disabled={isWatched || isUpcoming} onClick={markWatched}>Watched</button>
+      <button className='movieCardButton' disabled={isWatched} onClick={removeFromList}>Remove</button>
+      </div>) 
+
+      else return (
+      <button className='movieCardButton' id='singleMovieButton' disabled={disableButton} onClick={addToList}>Add to list</button>)
     }
   }
 
   const upcoming = () => {
     if(release_date) {
-      // setIsWatched(true);
-      return (<p>Release: {new Date(release_date).toLocaleDateString().toString()}</p>)
+      return (<h3>Releases: {new Date(release_date).toLocaleDateString().toString()}</h3>)
     }
   }
 

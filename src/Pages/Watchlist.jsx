@@ -25,7 +25,7 @@ function Watchlist(props) {
     const getWatchlist = async (e) => {
         if(e) e.preventDefault();
         
-        axios.get(`http://localhost:9001/watchlist`).then(res => {
+        axios.get('/api/watchlist').then(res => {
             res.data.forEach((movie, index) => {
                 movie.onWatchlist = true;
                 res.data[index] = movie;
@@ -41,7 +41,7 @@ function Watchlist(props) {
 
         setMovies([]);
 
-        axios.get('http://localhost:9001/movies', {params: {watchlist: true}})
+        axios.get('/api/movies', {params: {watchlist: true}})
         .then(res => {
             setMovies(res.data);
         })
@@ -49,7 +49,7 @@ function Watchlist(props) {
 
     return (
         <div className='searchDiv'>
-            <PosterDisplay movies={movies.sort()} isInWatchList={isInWatchList} getAllMovies={getAllMovies} />
+            <PosterDisplay movies={movies} isInWatchList={isInWatchList} getAllMovies={getAllMovies} />
         </div>
     )
 }

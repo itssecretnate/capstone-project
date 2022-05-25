@@ -8,24 +8,28 @@ function Home() {
     const [movies, setMovies] = useState([]);
 
     useEffect(() => {
-            axios.get('http://localhost:9001/watchlist')
+            axios.get('/api/watchlist')
             .then(res => {
+                console.log(res.data);
                 setMovies(res.data);
             })
     }, [])
 
     const randNum = (range, prevArr) => {
-
         let num = Math.round(Math.random() * range);
 
+        // This checks an array that's passed through that includes numbers already used to prevent duplicates.
         if(prevArr !== undefined && prevArr.includes(num)) {
             return randNum(range, prevArr);
         }
-        
+
         return num;
     }
 
     const displayMovies = (count) => {
+
+        if(!Array.isArray(movies)) return(<h1>Error retrieving movies.</h1>);
+
         let moviesArr = [];
         let newCount = count > movies.count ? movies.count : count;
 
@@ -38,6 +42,10 @@ function Home() {
     }
 
     const displayRandomMovies = (count) => {
+
+        if(!Array.isArray(movies)) return(<h1>Error retrieving movies.</h1>);
+
+
         let moviesArr = [];
         let previousRand = [];
 
@@ -57,6 +65,10 @@ function Home() {
     }
 
     const displayUpcoming = (count) => {
+
+        if(!Array.isArray(movies)) return(<h1>Error filtering movies.</h1>);
+
+
         let moviesArr = [];
         let newCount = count > movies.count ? movies.count : count;
 

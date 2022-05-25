@@ -8,14 +8,13 @@ import Navbar from './Components/Navbar';
 
 
 function App() {
-  return (
-    <>
-    <Navbar />
     
-    {/* Used for browser router. */}
+    return (
+      <>
+    <Navbar />
     <Outlet />
     </>
-  );
+  )
 }
 
 export default App;

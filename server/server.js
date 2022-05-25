@@ -5,33 +5,30 @@ const cors = require('cors')
 const path = require('path');
 
 // const {seed} = require('./seedDB.js');
-const {login, register, addToMovieTable, getMovies, getWatchlist, addToWatchlist, removeFromWatchlist, updateWatchList} = require('./controller.js');
+const {login, register, addToMovieTable, getMovies, getWatchlist, removeFromWatchlist, updateWatchList} = require('./controller.js');
 
 app.use(express.json())
 app.use(cors())
 
 // Middleware setup (Send HTML to page)
+const publicfolder = path.join(__dirname, '../build/') 
 
-const publicfolder = path.join(__dirname, '../build/')
+app.use(express.static(publicfolder));
 
-// app.use(express.static(publicfolder));
+app.post('/api/register', register);
+app.post('/api/login', login);
 
-// app.get('/', (req, res) => { res.sendFile(publicfolder + 'index.html')
-// })
+app.get('/api/movies', getMovies);
+app.post('/api/movies', addToMovieTable);
 
-// Endpoints
-// app.post('/api/seed', seed);
+app.get('/api/watchlist', getWatchlist);
+app.put('/api/watchlist', updateWatchList);
+app.delete('/api/watchlist', removeFromWatchlist);
 
-app.post('/register', register);
-app.post('/login', login);
-
-app.get('/movies', getMovies);
-app.post('/movies', addToMovieTable);
-
-
-app.get('/watchlist', getWatchlist);
-app.put('/watchlist', updateWatchList);
-app.delete('/watchlist', removeFromWatchlist);
+// Finally serve the react app.
+app.get('*', (req, res) => {
+    res.sendFile(publicfolder + 'index.html')
+})
 
 
 const SERVER_PORT = process.SERVER_PORT || 9001;

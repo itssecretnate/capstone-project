@@ -8,7 +8,7 @@ function PosterDisplay(props) {
 
   return (
     <div className='resultsContainer'>
-        {movies && movies.map(movie => <MovieCard key={movie.imdb_id} movie={movie} watchListItem={isInWatchList(movie.imdb_id)} updateList={getAllMovies}/>)}
+        {Array.isArray(movies) && movies.map(movie => <MovieCard key={movie.imdb_id} movie={movie} watchListItem={isInWatchList(movie.imdb_id)} updateList={getAllMovies}/>)}
     </div>
   )
 }
